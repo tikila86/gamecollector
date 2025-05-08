@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Sammlung & Tauschkiste</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sammelalbum</title>
   <style>
     body {
       margin: 0;
@@ -10,86 +11,96 @@
       background-color: #000;
       color: white;
       display: flex;
-      height: 100vh;
+      flex-direction: row;
+      min-height: 100vh;
+      overflow: hidden;
     }
 
     aside {
-      width: 200px;
-      background: #111;
-      border-right: 1px solid #333;
+      width: 220px;
+      background-color: #111;
+      padding: 20px;
       overflow-y: auto;
-      padding: 10px;
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.5);
     }
 
     aside h2 {
-      font-size: 18px;
       margin-top: 0;
-      text-align: center;
+      font-size: 20px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
     }
 
     aside ul {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
 
     aside li {
+      margin: 8px 0;
       cursor: pointer;
-      padding: 6px;
-      border-bottom: 1px solid #333;
+      color: #ccc;
     }
 
     aside li:hover {
-      background: #222;
+      color: gold;
     }
 
     main {
-      flex-grow: 1;
-      padding: 20px;
+      flex: 1;
       overflow-y: auto;
+      padding: 20px;
     }
 
-    h2.section {
-      border-bottom: 1px solid #444;
-      padding-bottom: 5px;
+    h1 {
+      font-size: 28px;
+      text-align: center;
+      margin: 0 0 20px 0;
+    }
+
+    .section {
+      margin-bottom: 40px;
     }
 
     .card-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
     }
 
     .card {
-      width: 200px;
-      height: 320px;
       background-color: #111;
       background-image: radial-gradient(#2a2a2a 1px, transparent 1px);
       background-size: 12px 12px;
-      border-radius: 12px;
-      padding: 12px;
-      box-sizing: border-box;
+      border-radius: 16px;
+      padding: 16px;
       box-shadow: 0 0 12px black;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
     .card img {
       width: 100%;
-      height: 120px;
+      height: 160px;
       object-fit: cover;
-      border-radius: 8px;
-      box-shadow: 0 0 8px black;
+      border-radius: 12px;
+      box-shadow: 0 0 12px black;
+      margin-bottom: 12px;
     }
 
     .card .title {
+      font-size: 18px;
       font-weight: bold;
-      font-size: 14px;
       text-align: center;
-      margin: 8px 0;
+      margin-bottom: 8px;
     }
 
-    .card .id {
-      font-size: 12px;
-      text-align: center;
-      color: #aaa;
+    .card .info {
+      font-size: 14px;
+      color: #ccc;
+      margin-bottom: 4px;
     }
 
     .gold {
@@ -101,6 +112,26 @@
       border: 2px solid #66ccff;
       background: linear-gradient(135deg, #1e1e1e, #000);
     }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+      }
+
+      main {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -109,24 +140,27 @@
     <ul id="userList"></ul>
   </aside>
   <main>
-    <h2 class="section">Sammlung</h2>
-    <div id="collection" class="card-grid"></div>
-    <h2 class="section">Tauschkiste</h2>
-    <div id="duplicates" class="card-grid"></div>
+    <h1 id="userTitle">Wähle einen Benutzer</h1>
+    <div class="section">
+      <h2>Sammlung</h2>
+      <div id="collection" class="card-grid"></div>
+    </div>
+    <div class="section">
+      <h2>Tauschkiste</h2>
+      <div id="duplicates" class="card-grid"></div>
+    </div>
   </main>
 
   <script>
     let games = {};
-    let caught = {};
+    let data = {};
 
     async function loadData() {
-      const [gamesRes, caughtRes] = await Promise.all([
-        fetch("games.json"),
-        fetch("caught_games.json")
-      ]);
-
+      const gamesRes = await fetch("games.json");
       games = await gamesRes.json();
-      caught = await caughtRes.json();
+
+      const dataRes = await fetch("caught_games.json");
+      data = await dataRes.json();
 
       populateUserList();
     }
@@ -134,40 +168,48 @@
     function populateUserList() {
       const ul = document.getElementById("userList");
       ul.innerHTML = "";
-      Object.keys(caught).forEach(user => {
+
+      Object.keys(data).forEach(user => {
         const li = document.createElement("li");
-        li.innerText = user;
+        li.textContent = user;
         li.onclick = () => showUser(user);
         ul.appendChild(li);
       });
     }
 
     function showUser(user) {
-      const data = caught[user];
-      renderCards(data.collection || [], document.getElementById("collection"));
-      renderCards(data.duplicates || [], document.getElementById("duplicates"));
+      document.getElementById("userTitle").textContent = `${user}'s Album`;
+
+      const collection = data[user].collection || [];
+      const duplicates = data[user].duplicates || [];
+
+      renderCards(collection, document.getElementById("collection"));
+      renderCards(duplicates, document.getElementById("duplicates"));
     }
 
-    function renderCards(entries, container) {
+    function renderCards(list, container) {
       container.innerHTML = "";
-      entries.forEach(entry => {
-        const id = entry.id;
-        const game = Object.values(games).find(g => g.id == id);
+      list.forEach(entry => {
+        const game = Object.values(games).find(g => g.id == entry.id);
         if (!game) return;
 
         const div = document.createElement("div");
-        div.classList.add("card");
+        div.className = "card";
 
-        const nameLower = game.name.toLowerCase();
-        if (nameLower.includes("gold edition")) div.classList.add("gold");
-        if (nameLower.includes("holo edition")) div.classList.add("holo");
+        const isGold = game.name.toLowerCase().includes("gold edition");
+        const isHolo = game.name.toLowerCase().includes("holo edition");
+        if (isGold) div.classList.add("gold");
+        if (isHolo) div.classList.add("holo");
 
         div.innerHTML = `
           <img src="${game.cover}" alt="Cover" />
           <div class="title">${game.name}</div>
-          <div class="id">ID: ${game.id}</div>
+          <div class="info">ID: ${game.id}</div>
+          <div class="info">Plattformen: ${(game.platforms || []).join(", ")}</div>
+          <div class="info">Genres: ${(game.genres || []).join(", ")}</div>
+          <div class="info">Bewertung: ${game.rating || "–"} ★</div>
+          <div class="info">Erschienen: ${new Date(game.released || "").toLocaleDateString("de-DE")}</div>
         `;
-
         container.appendChild(div);
       });
     }
