@@ -113,6 +113,7 @@
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
+    
     .info2 {
       font-size: 16px;
       color: #ccc;
@@ -234,9 +235,9 @@
           <hr />
           <div class="info">Plattformen: ${(game.platforms || []).join(", ")}</div>
           <hr />
-          <div class="info">ID: ${game.id}</div>
-          <div class="info">Erschienen: ${new Date(game.released || "").toLocaleDateString("de-DE")}</div>
-          <div class="info">Genres: ${(game.genres || []).join(", ")}</div>
+          <div class="info2">ID: ${game.id}</div>
+          <div class="info2">Erschienen: ${new Date(game.released || "").toLocaleDateString("de-DE")}</div>
+          <div class="info2">Genres: ${(game.genres || []).join(", ")}</div>
         `;
         container.appendChild(div);
       });
